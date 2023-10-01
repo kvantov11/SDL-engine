@@ -18,14 +18,14 @@ int main(int argc, char* argv[])
     renderer->CreateRenderer(window->GetWindow());
 
     std::shared_ptr<Object> objPtr = std::make_shared<Object>();
-    objPtr->Transform().SetPosition({ 320,240,0 });
+    objPtr->Transform().SetPosition({ 0, 480, 0 });
+    objPtr->Transform().RotateUpAxis(45);
 
     float i = 0;
-    const float howLong = 3; // sec
+    const float howLong = 7; // sec
     const float deltaTime = 16; // ms
     const float rotationSpeed = -90; // degree/sec
     const float forwardSpeed = 100; // pixel/sec
-    objPtr->Transform().RotateUpAxis(45);
     while (i < howLong * 1000 / deltaTime)
     {
         ++i;
@@ -34,11 +34,9 @@ int main(int argc, char* argv[])
         renderer->Render(objPtr.get());
         renderer->PresentScene();
 
-        objPtr->Transform().TranslateForward(forwardSpeed * deltaTime / 1000);
-        //objPtr->Transform().RotateUpAxis(rotationSpeed * deltaTime / 1000);
-        //objPtr->Transform().RotateForwardAxis(2 * rotationSpeed * deltaTime / 1000);
-        //objPtr->Transform().RotateRightAxis(3 * rotationSpeed * deltaTime / 1000);
-
+        objPtr->Transform().TranslateForward(forwardSpeed * deltaTime / 1000.f);
+        objPtr->Transform().RotateUpAxis(rotationSpeed * deltaTime / 1000.f);
+        objPtr->Transform().RotateForwardAxis(2 * rotationSpeed * deltaTime / 1000.f);
 
         SDL_Delay(deltaTime);
     }

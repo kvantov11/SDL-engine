@@ -329,11 +329,11 @@ void Transform::RotateForwardAxis(const float angle)
 
 void Transform::TranslateForward(const float distance)
 {
-    Matrix4x4 matrix;
-    matrix.SetRow(0, { _forward.GetElement(0), _forward.GetElement(1), _forward.GetElement(2), distance });
-    matrix.SetRow(1, { _right.GetElement(0), _right.GetElement(1), _right.GetElement(2), 0.f });
-    matrix.SetRow(2, { _up.GetElement(0), _up.GetElement(1), _up.GetElement(2), 0.f });
-    matrix.SetRow(3, { 0.f, 0.f, 0.f, 0.f });
+    Matrix4x4 matrix{
+        { 1.f, 0.f, 0.f, _forward.GetElement(0) * distance },
+        { 0.f, 1.f, 0.f, _forward.GetElement(1) * distance },
+        { 0.f, 0.f, 1.f, _forward.GetElement(2) * distance },
+        { 0.f, 0.f, 0.f, 1.f } };
 
     Vector4 vector(_position, 1.f);
     Vector4 result{ matrix.Multiply(vector) };
@@ -345,11 +345,11 @@ void Transform::TranslateForward(const float distance)
 
 void Transform::TranslateRight(const float distance)
 {
-    Matrix4x4 matrix;
-    matrix.SetRow(0, { _forward.GetElement(0), _forward.GetElement(1), _forward.GetElement(2), 0.f });
-    matrix.SetRow(1, { _right.GetElement(0), _right.GetElement(1), _right.GetElement(2), distance });
-    matrix.SetRow(2, { _up.GetElement(0), _up.GetElement(1), _up.GetElement(2), 0.f });
-    matrix.SetRow(3, { 0.f, 0.f, 0.f, 0.f });
+    Matrix4x4 matrix{
+        { 1.f, 0.f, 0.f, _right.GetElement(0) * distance },
+        { 0.f, 1.f, 0.f, _right.GetElement(1) * distance },
+        { 0.f, 0.f, 1.f, _right.GetElement(2) * distance },
+        { 0.f, 0.f, 0.f, 1.f } };
 
     Vector4 vector(_position, 1.f);
     Vector4 result{ matrix.Multiply(vector) };
@@ -361,11 +361,11 @@ void Transform::TranslateRight(const float distance)
 
 void Transform::TranslateUp(const float distance)
 {
-    Matrix4x4 matrix;
-    matrix.SetRow(0, { _forward.GetElement(0), _forward.GetElement(1), _forward.GetElement(2), 0.f });
-    matrix.SetRow(1, { _right.GetElement(0), _right.GetElement(1), _right.GetElement(2), 0.f });
-    matrix.SetRow(2, { _up.GetElement(0), _up.GetElement(1), _up.GetElement(2), distance });
-    matrix.SetRow(3, { 0.f, 0.f, 0.f, 0.f });
+    Matrix4x4 matrix{
+        { 1.f, 0.f, 0.f, _up.GetElement(0) * distance },
+        { 0.f, 1.f, 0.f, _up.GetElement(1) * distance },
+        { 0.f, 0.f, 1.f, _up.GetElement(2) * distance },
+        { 0.f, 0.f, 0.f, 1.f } };
 
     Vector4 vector(_position, 1.f);
     Vector4 result{ matrix.Multiply(vector) };
@@ -377,11 +377,11 @@ void Transform::TranslateUp(const float distance)
 
 void Transform::Translate(const float forward, const float right, const float up)
 {
-    Matrix4x4 matrix;
-    matrix.SetRow(0, { _forward.GetElement(0), _forward.GetElement(1), _forward.GetElement(2), forward });
-    matrix.SetRow(1, { _right.GetElement(0), _right.GetElement(1), _right.GetElement(2), right });
-    matrix.SetRow(2, { _up.GetElement(0), _up.GetElement(1), _up.GetElement(2), up });
-    matrix.SetRow(3, { 0.f, 0.f, 0.f, 0.f });
+    Matrix4x4 matrix{
+        { 1.f, 0.f, 0.f, forward },
+        { 0.f, 1.f, 0.f, right },
+        { 0.f, 0.f, 1.f, up },
+        { 0.f, 0.f, 0.f, 1.f } };
 
     Vector4 vector(_position, 1.f);
     Vector4 result{ matrix.Multiply(vector) };
