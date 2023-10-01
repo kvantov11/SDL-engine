@@ -42,7 +42,7 @@ void Window::DestroyWindow()
 	SDL_DestroyWindow(_window);
 	if (!_window)
 	{
-		LogError;
+		LogSDLError;
 	}
 	else
 	{

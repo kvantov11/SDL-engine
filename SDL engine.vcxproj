@@ -132,6 +132,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="source\main.cpp" />
+    <ClCompile Include="source\randomstuff.cpp" />
     <ClCompile Include="source\renderer.cpp" />
     <ClCompile Include="source\window.cpp" />
   </ItemGroup>
@@ -140,6 +141,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\logUtils.h" />
+    <ClInclude Include="include\randomstuff.h" />
     <ClInclude Include="include\renderer.h" />
     <ClInclude Include="include\window.h" />
   </ItemGroup>
