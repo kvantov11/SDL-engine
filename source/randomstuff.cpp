@@ -396,17 +396,65 @@ void Transform::Translate(const Vector3& vector)
     Translate(vector.GetElement(0), vector.GetElement(1), vector.GetElement(2));
 }
 
-const Transform& Object::GetTransform() const
+const Transform& Object::GetTransformGlobal() const
 {
-    return _transform;
+    return _transformGlobal;
 }
 
-void Object::SetTransform(const class Transform& transform)
+void Object::SetTransformGlobal(const class Transform& transform)
 {
-    _transform = transform;
+    _transformGlobal = transform;
 }
 
-Transform& Object::Transform()
+Transform& Object::TransformGlobal()
 {
-    return _transform;
+    return _transformGlobal;
+}
+
+const Transform& Object::GetTransformLocal() const
+{
+    return _transformLocal;
+}
+
+void Object::SetTransformLocal(const Transform& transform)
+{
+
+}
+
+Transform& Object::TransformLocal()
+{
+    return _transformLocal;
+}
+
+const std::vector<std::weak_ptr<Object>>& Object::GetAttachedObjects() const
+{
+    return _attachedObjects;
+}
+
+void Object::AttachToParent(std::weak_ptr<Object> parentPtr, std::weak_ptr<Object> childPtr)
+{
+    auto child = childPtr.lock();
+    auto parent = parentPtr.lock();
+    if (!child || !parent)
+    {
+        return;
+    }
+
+    child->SetParent(parentPtr);
+    parent->AttachChild(childPtr);
+}
+
+const std::weak_ptr<Object> Object::GetParent() const
+{
+    return _parentPtr;
+}
+
+void Object::SetParent(std::weak_ptr<Object> parentPtr)
+{
+    _parentPtr = parentPtr;
+}
+
+void Object::AttachChild(std::weak_ptr<Object> childPtr)
+{
+    _attachedObjects.push_back(childPtr);
 }

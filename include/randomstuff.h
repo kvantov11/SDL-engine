@@ -1,5 +1,8 @@
 #pragma once
 
+#include <memory>
+#include <vector>
+
 class Vector3
 {
 private:
@@ -100,9 +103,23 @@ public:
 class Object
 {
 private:
-	Transform _transform;
+	Transform _transformGlobal;
+	Transform _transformLocal;
+	std::vector<std::weak_ptr<Object>> _attachedObjects;
+	std::weak_ptr<Object> _parentPtr;
 public:
-	const Transform& GetTransform() const;
-	void SetTransform(const Transform& transform);
-	Transform& Transform();
+	static void AttachToParent(std::weak_ptr<Object> parentPtr, std::weak_ptr<Object> childPtr);
+public:
+	const Transform& GetTransformGlobal() const;
+	void SetTransformGlobal(const Transform& transform);
+	Transform& TransformGlobal();
+	const Transform& GetTransformLocal() const;
+	void SetTransformLocal(const Transform& transform);
+	Transform& TransformLocal();
+
+	const std::vector<std::weak_ptr<Object>>& GetAttachedObjects() const;
+	const std::weak_ptr<Object> GetParent() const;
+private:
+	void AttachChild(std::weak_ptr<Object> childPtr);
+	void SetParent(std::weak_ptr<Object> parentPtr);
 };

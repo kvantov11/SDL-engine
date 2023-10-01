@@ -27,10 +27,10 @@ public:
 	const int GetWindowWidth() const;
 	const int GetWindowHeight() const;
 	Uint32 GetWindowFlags() const;
-	Window* SetWindowName(const std::string& name);
-	Window* SetWindowWidth(int width);
-	Window* SetWindowHeight(int height);
-	Window* SetWindowFlags(Uint32 flags);
+	const Window* SetWindowName(const std::string& name);
+	const Window* SetWindowWidth(int width);
+	const Window* SetWindowHeight(int height);
+	const Window* SetWindowFlags(Uint32 flags);
 };
 
 // How to update existing window if parameters are changed
