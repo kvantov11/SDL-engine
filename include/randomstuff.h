@@ -3,6 +3,10 @@
 #include <memory>
 #include <vector>
 
+#define M3UpRotation(radians) { std::cos(radians), -std::sin(radians), 0.f }, { std::sin(radians), std::cos(radians), 0.f }, { 0.f, 0.f, 1.f }
+#define M3RightRotation(radians) { std::cos(radians), 0.f, std::sin(radians) }, { 0.f, 1.f, 0.f }, { -std::sin(radians), 0.f, std::cos(radians) }
+#define M3ForwardRotation(radians) { 1.f, 0.f, 0.f }, { 0.f, std::cos(radians), -std::sin(radians) }, { 0.f, std::sin(radians), std::cos(radians) }
+
 class Vector3
 {
 private:
@@ -70,6 +74,7 @@ public:
 	void Transpose();
 	Matrix4x4 GetTransposed() const;
 	Vector4 Multiply(const Vector4& vector) const;
+	Matrix4x4 Multiply(const Matrix4x4& matrix) const;
 };
 
 class Transform
@@ -80,6 +85,12 @@ private:
 	Vector3 _right{ 0.f, 1.f, 0.f };
 	Vector3 _up{ 0.f, 0.f, 1.f };
 public:
+	static Transform Multiply(const Transform& A, const Transform& B);
+	static Vector4 Multiply(const Transform& transform, const Vector4& vector);
+	static Vector3 Multiply(const Transform& transform, const Vector3& vector);
+public:
+	Transform() = default;
+	Transform(const Matrix4x4& matrix);
 	Vector3 GetPosition() const;
 	void SetPosition(const Vector3& position);
 	Matrix3x3 GetOrientation() const;
@@ -98,6 +109,7 @@ public:
 	void TranslateUp(const float distance);
 	void Translate(const float forward, const float right, const float up);
 	void Translate(const Vector3& vector);
+	Matrix4x4 GetTransformMatrix() const;
 };
 
 class Object

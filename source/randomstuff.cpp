@@ -160,6 +160,34 @@ Matrix3x3 Matrix3x3::Multiply(const Matrix3x3& matrix) const
     return result;
 }
 
+Transform Transform::Multiply(const Transform& A, const Transform& B)
+{
+    return A.GetTransformMatrix().Multiply(B.GetTransformMatrix());
+}
+
+Vector4 Transform::Multiply(const Transform& transform, const Vector4& vector)
+{
+    return transform.GetTransformMatrix().Multiply(vector);
+}
+
+Vector3 Transform::Multiply(const Transform& transform, const Vector3& vector)
+{
+    Vector4 multiplier{ vector, 1.f };
+    Vector4 result{ Transform::Multiply(transform,multiplier) };
+    return { result.GetElement(0), result.GetElement(1), result.GetElement(2) };
+}
+
+Transform::Transform(const Matrix4x4& matrix)
+{
+    for (int i = 0; i < 3; ++i)
+    {
+        _forward.SetElement(i, matrix.GetRow(0).GetElement(i));
+        _right.SetElement(i, matrix.GetRow(1).GetElement(i));
+        _up.SetElement(i, matrix.GetRow(2).GetElement(i));
+        _position.SetElement(i, matrix.GetColumn(3).GetElement(i));
+    }
+}
+
 Vector3 Transform::GetPosition() const
 {
     return _position;
@@ -257,6 +285,20 @@ Vector4 Matrix4x4::Multiply(const Vector4& vector) const
     return result;
 }
 
+Matrix4x4 Matrix4x4::Multiply(const Matrix4x4& matrix) const
+{
+    Matrix4x4 result;
+    for (int i = 0; i < 4; ++i)
+    {
+        for (int j = 0; j < 4; ++j)
+        {
+            result.SetElement(i, j, _vectors[i].DotProduct(matrix.GetColumn(j)));
+        }
+    }
+
+    return result;
+}
+
 void Transform::SetOrientation(const Matrix3x3& orientation)
 {
     _forward = orientation.GetRow(0);
@@ -297,33 +339,21 @@ void Transform::SetUpVector(const Vector3& up)
 void Transform::RotateUpAxis(const float angle)
 {
     const float radians = M_PI * (angle / 180.f);
-    const Matrix3x3 rotationMatrix{
-        {std::cos(radians), -std::sin(radians), 0.f},
-        {std::sin(radians), std::cos(radians), 0.f},
-        {0.f, 0.f, 1.f} };
-
+    const Matrix3x3 rotationMatrix{ M3UpRotation(radians) };
     SetOrientation(rotationMatrix.Multiply({ _forward, _right, _up }));
 }
 
 void Transform::RotateRightAxis(const float angle)
 {
     const float radians = M_PI * (angle / 180.f);
-    const Matrix3x3 rotationMatrix{
-        {std::cos(radians), 0.f, std::sin(radians)},
-        {0.f, 1.f, 0.f},
-        {-std::sin(radians), 0.f, std::cos(radians)} };
-
+    const Matrix3x3 rotationMatrix{ M3RightRotation(radians) };
     SetOrientation(rotationMatrix.Multiply({ _forward, _right, _up }));
 }
 
 void Transform::RotateForwardAxis(const float angle)
 {
     const float radians = M_PI * (angle / 180.f);
-    const Matrix3x3 rotationMatrix{
-        {1.f, 0.f, 0.f},
-        {0.f, std::cos(radians), -std::sin(radians)},
-        {0.f, std::sin(radians), std::cos(radians)} };
-
+    const Matrix3x3 rotationMatrix{ M3ForwardRotation(radians) };
     SetOrientation(rotationMatrix.Multiply({ _forward, _right, _up }));
 }
 
@@ -394,6 +424,16 @@ void Transform::Translate(const float forward, const float right, const float up
 void Transform::Translate(const Vector3& vector)
 {
     Translate(vector.GetElement(0), vector.GetElement(1), vector.GetElement(2));
+}
+
+Matrix4x4 Transform::GetTransformMatrix() const
+{
+    return {
+        { _forward.GetElement(0), _forward.GetElement(1), _forward.GetElement(2), _position.GetElement(0) },
+        { _right.GetElement(0), _right.GetElement(1), _right.GetElement(2), _position.GetElement(1) },
+        { _up.GetElement(0), _up.GetElement(1), _up.GetElement(2), _position.GetElement(2) },
+        { 0.f, 0.f, 0.f, 1.f }
+    };
 }
 
 const Transform& Object::GetTransformGlobal() const
