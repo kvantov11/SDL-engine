@@ -19,17 +19,18 @@ int main(int argc, char* argv[])
     renderer->CreateRenderer(window->GetWindow());
 
     std::shared_ptr<Object> objPtr = std::make_shared<Object>();
-    objPtr->TransformGlobal().SetPosition({ 0, 480, 0 });
-    objPtr->TransformGlobal().RotateUpAxis(45);
+    objPtr->TransformGlobal().SetPosition({ 100, 240, 0 });
+    objPtr->TransformGlobal().RotateUpAxis(0);
 
     std::shared_ptr<Object> childPtr = std::make_shared<Object>();
-    childPtr->TransformLocal().SetPosition({ 100, 100, 0 });
+    childPtr->TransformLocal().SetPosition({ 100, 200, 0 });
+    childPtr->TransformLocal().RotateUpAxis(45);
     Object::AttachToParent(objPtr, childPtr);
 
     float i = 0;
     const float howLong = 7; // sec
     const float deltaTime = 16; // ms
-    const float rotationSpeed = -90; // degree/sec
+    const float rotationSpeed = 90; // degree/sec
     const float forwardSpeed = 100; // pixel/sec
     while (i < howLong * 1000 / deltaTime)
     {

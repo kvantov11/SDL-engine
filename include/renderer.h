@@ -34,7 +34,7 @@ public:
 	const SDL_Color& GetRenderDrawColor() const;
 	void PrepareScene();
 	void PresentScene();
-	void Render(const Object* object);
+	void Render(Object* object);
 private:
-	void RenderOrientationVectors(const Object* object);
+	void RenderOrientationVectors(Object* object);
 };

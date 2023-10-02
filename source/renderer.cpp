@@ -112,7 +112,7 @@ void Renderer::PresentScene()
 	SDL_RenderPresent(_renderer);
 }
 
-void Renderer::Render(const Object* object)
+void Renderer::Render(Object* object)
 {
 	if (!object)
 	{
@@ -134,7 +134,7 @@ void Renderer::Render(const Object* object)
 		});
 }
 
-void Renderer::RenderOrientationVectors(const Object* object)
+void Renderer::RenderOrientationVectors(Object* object)
 {
 	if (!_renderer)
 	{
@@ -161,27 +161,28 @@ void Renderer::RenderOrientationVectors(const Object* object)
 			parentTransformGlobal = object->GetTransformGlobal();
 		}
 
+		// multiply parent's global transform with object's local transform and assign result to object global transform
+		object->SetTransformGlobal(Transform::Multiply(parentTransformGlobal, object->GetTransformLocal()));
 		// the length of lines representing object's orientation
 		const float lineLength{ 50.f };
-		// origin
-		const float x0 =
-			parentTransformGlobal.GetPosition().GetElement(0) +
-			parentTransformGlobal.GetForwardVector().DotProduct(object->GetTransformLocal().GetPosition());
-		const float y0 =
-			parentTransformGlobal.GetPosition().GetElement(1) -
-			parentTransformGlobal.GetRightVector().DotProduct(object->GetTransformLocal().GetPosition());
+		const float x0 = object->GetTransformGlobal().GetPosition().GetElement(0);
+		// Y axis is inverted in SDL, y0 is calculated as offset between parent's and child's Y substracted from child's global Y 
+		// child new Y = parent Y - (child original Y - parent Y)
+		const float y0 = 2 * parentTransformGlobal.GetPosition().GetElement(1) - object->GetTransformGlobal().GetPosition().GetElement(1);
 
-		// doesn't work for children yet
+		// X axis
+		SetRenderDrawColor(ColorRed);
 		float x1 = x0 + object->GetTransformGlobal().GetForwardVector().GetElement(0) * lineLength;
 		float y1 = y0 + object->GetTransformGlobal().GetForwardVector().GetElement(1) * lineLength;
-		SetRenderDrawColor(ColorRed);
 		SDL_RenderDrawLineF(_renderer, x0, y0, x1, y1);
 
+		// Y axis
 		SetRenderDrawColor(ColorBlue);
 		x1 = x0 - object->GetTransformGlobal().GetRightVector().GetElement(0) * lineLength;
 		y1 = y0 - object->GetTransformGlobal().GetRightVector().GetElement(1) * lineLength;
 		SDL_RenderDrawLineF(_renderer, x0, y0, x1, y1);
 
+		// Z axis
 		SetRenderDrawColor(ColorGreen);
 		x1 = x0 + object->GetTransformGlobal().GetUpVector().GetElement(0) * lineLength;
 		y1 = y0 + object->GetTransformGlobal().GetUpVector().GetElement(1) * lineLength;
