@@ -14,17 +14,23 @@ int main(int argc, char* argv[])
 
     Window* window = new Window;
     Renderer* renderer = new Renderer;
+
     window->CreateWindow();
     renderer->CreateRenderer(window->GetWindow());
 
     std::shared_ptr<Object> objPtr = std::make_shared<Object>();
-    objPtr->Transform().SetPosition({ 0, 480, 0 });
-    objPtr->Transform().RotateUpAxis(45);
+    objPtr->TransformGlobal().SetPosition({ 100, 240, 0 });
+    objPtr->TransformGlobal().RotateUpAxis(0);
+
+    std::shared_ptr<Object> childPtr = std::make_shared<Object>();
+    childPtr->TransformLocal().SetPosition({ 100, 200, 0 });
+    childPtr->TransformLocal().RotateUpAxis(45);
+    Object::AttachToParent(objPtr, childPtr);
 
     float i = 0;
     const float howLong = 7; // sec
     const float deltaTime = 16; // ms
-    const float rotationSpeed = -90; // degree/sec
+    const float rotationSpeed = 90; // degree/sec
     const float forwardSpeed = 100; // pixel/sec
     while (i < howLong * 1000 / deltaTime)
     {
@@ -34,9 +40,9 @@ int main(int argc, char* argv[])
         renderer->Render(objPtr.get());
         renderer->PresentScene();
 
-        objPtr->Transform().TranslateForward(forwardSpeed * deltaTime / 1000.f);
-        objPtr->Transform().RotateUpAxis(rotationSpeed * deltaTime / 1000.f);
-        objPtr->Transform().RotateForwardAxis(2 * rotationSpeed * deltaTime / 1000.f);
+        objPtr->TransformGlobal().TranslateForward(forwardSpeed * deltaTime / 1000.f);
+        objPtr->TransformGlobal().RotateUpAxis(rotationSpeed * deltaTime / 1000.f);
+        objPtr->TransformGlobal().RotateForwardAxis(2 * rotationSpeed * deltaTime / 1000.f);
 
         SDL_Delay(deltaTime);
     }

@@ -23,15 +23,18 @@ private:
 	SDL_Renderer* _renderer = nullptr;
 	Uint32 _rendererFlags = SDL_RENDERER_ACCELERATED;
 	SDL_Color _renderDrawColor = { 96, 128, 255, 255 };
+
 public:
 	void CreateRenderer(SDL_Window* window);
-	SDL_Renderer* GetRenderer();
+	const SDL_Renderer* GetRenderer();
 	void DestroyRenderer();
-	Renderer* SetRendererFlags(Uint32 flags);
+	const Renderer* SetRendererFlags(Uint32 flags);
 	void SetRenderDrawColor(Uint8 r, Uint8 g, Uint8 b, Uint8 a);
 	void SetRenderDrawColor(SDL_Color color);
 	const SDL_Color& GetRenderDrawColor() const;
 	void PrepareScene();
 	void PresentScene();
 	void Render(Object* object);
+private:
+	void RenderOrientationVectors(Object* object);
 };

@@ -50,7 +50,7 @@ void Window::DestroyWindow()
 	}
 }
 
-Window* Window::SetWindowName(const std::string& name)
+const Window* Window::SetWindowName(const std::string& name)
 {
 	if (this)
 	{
@@ -74,7 +74,7 @@ const int Window::GetWindowHeight() const
 	return _windowHeight;
 }
 
-Window* Window::SetWindowWidth(int width)
+const Window* Window::SetWindowWidth(int width)
 {
 	if (this)
 	{
@@ -84,7 +84,7 @@ Window* Window::SetWindowWidth(int width)
 	return this;
 }
 
-Window* Window::SetWindowHeight(int height)
+const Window* Window::SetWindowHeight(int height)
 {
 	if (this)
 	{
@@ -94,7 +94,7 @@ Window* Window::SetWindowHeight(int height)
 	return this;
 }
 
-Window* Window::SetWindowFlags(Uint32 flags)
+const Window* Window::SetWindowFlags(Uint32 flags)
 {
 	if (this)
 	{

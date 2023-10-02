@@ -5,6 +5,8 @@
 
 #include "SDL.h"
 
+#include <algorithm>
+
 namespace
 {
 	const char* rendererError = "Renderer is nullptr";
@@ -28,7 +30,7 @@ void Renderer::CreateRenderer(SDL_Window* window)
 	}
 }
 
-SDL_Renderer* Renderer::GetRenderer()
+const SDL_Renderer* Renderer::GetRenderer()
 {
 	return _renderer;
 }
@@ -46,7 +48,7 @@ void Renderer::DestroyRenderer()
 	}
 }
 
-Renderer* Renderer::SetRendererFlags(Uint32 flags)
+const Renderer* Renderer::SetRendererFlags(Uint32 flags)
 {
 	if (_renderer)
 	{
@@ -112,6 +114,28 @@ void Renderer::PresentScene()
 
 void Renderer::Render(Object* object)
 {
+	if (!object)
+	{
+		return;
+	}
+
+	RenderOrientationVectors(object);
+	const std::vector<std::weak_ptr<Object>> attachedObjects{ object->GetAttachedObjects() };
+	if (attachedObjects.empty())
+	{
+		return;
+	}
+
+	std::for_each(attachedObjects.begin(), attachedObjects.end(), [this](std::weak_ptr<Object> child){
+		if (auto ptr = child.lock())
+		{
+			Render(ptr.get());
+		}
+		});
+}
+
+void Renderer::RenderOrientationVectors(Object* object)
+{
 	if (!_renderer)
 	{
 		LogCustomError("failed to render object");
@@ -125,23 +149,43 @@ void Renderer::Render(Object* object)
 	}
 	else
 	{
-		float lineLength = 50;
-		float x0 = object->GetTransform().GetPosition().GetElement(0);
-		float y0 = object->GetTransform().GetPosition().GetElement(1);
+		Transform parentTransformGlobal;
+		if (auto parent = object->GetParent().lock())
+		{
+			// parent's global tranform is used to calculate global transform of child
+			parentTransformGlobal = parent->GetTransformGlobal();
+		}
+		else
+		{
+			// object is root, its global transform can be used directly
+			parentTransformGlobal = object->GetTransformGlobal();
+		}
 
-		float x1 = x0 + object->GetTransform().GetForwardVector().GetElement(0) * lineLength;
-		float y1 = y0 + object->GetTransform().GetForwardVector().GetElement(1) * lineLength;
+		// multiply parent's global transform with object's local transform and assign result to object global transform
+		object->SetTransformGlobal(Transform::Multiply(parentTransformGlobal, object->GetTransformLocal()));
+		// the length of lines representing object's orientation
+		const float lineLength{ 50.f };
+		const float x0 = object->GetTransformGlobal().GetPosition().GetElement(0);
+		// Y axis is inverted in SDL, y0 is calculated as offset between parent's and child's Y substracted from child's global Y 
+		// child new Y = parent Y - (child original Y - parent Y)
+		const float y0 = 2 * parentTransformGlobal.GetPosition().GetElement(1) - object->GetTransformGlobal().GetPosition().GetElement(1);
+
+		// X axis
 		SetRenderDrawColor(ColorRed);
-		SDL_RenderDrawLineF(_renderer,x0, y0,x1,y1);
-
-		SetRenderDrawColor(ColorBlue);
-		x1 = x0 - object->GetTransform().GetRightVector().GetElement(0) * lineLength;
-		y1 = y0 - object->GetTransform().GetRightVector().GetElement(1) * lineLength;
+		float x1 = x0 + object->GetTransformGlobal().GetForwardVector().GetElement(0) * lineLength;
+		float y1 = y0 + object->GetTransformGlobal().GetForwardVector().GetElement(1) * lineLength;
 		SDL_RenderDrawLineF(_renderer, x0, y0, x1, y1);
 
+		// Y axis
+		SetRenderDrawColor(ColorBlue);
+		x1 = x0 - object->GetTransformGlobal().GetRightVector().GetElement(0) * lineLength;
+		y1 = y0 - object->GetTransformGlobal().GetRightVector().GetElement(1) * lineLength;
+		SDL_RenderDrawLineF(_renderer, x0, y0, x1, y1);
+
+		// Z axis
 		SetRenderDrawColor(ColorGreen);
-		x1 = x0 + object->GetTransform().GetUpVector().GetElement(0) * lineLength;
-		y1 = y0 + object->GetTransform().GetUpVector().GetElement(1) * lineLength;
+		x1 = x0 + object->GetTransformGlobal().GetUpVector().GetElement(0) * lineLength;
+		y1 = y0 + object->GetTransformGlobal().GetUpVector().GetElement(1) * lineLength;
 		SDL_RenderDrawLineF(_renderer, x0, y0, x1, y1);
 	}
 }
