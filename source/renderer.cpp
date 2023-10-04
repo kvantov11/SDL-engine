@@ -2,6 +2,7 @@
 
 #include "logUtils.h"
 #include "randomstuff.h"
+#include "window.h"
 
 #include "SDL.h"
 
@@ -12,35 +13,68 @@ namespace
 	const char* rendererError = "Renderer is nullptr";
 }
 
-Renderer::~Renderer()
+WrapperRenderer::~WrapperRenderer()
 {
 	DestroyRenderer();
 }
 
-void Renderer::CreateRenderer(SDL_Window* window)
+bool WrapperRenderer::InitializeRenderer(std::unique_ptr<WrapperRenderer>& renderer, SDL_Window* window)
 {
-	if (!_renderer)
+	if (!renderer)
 	{
-		_renderer = SDL_CreateRenderer(window, -1, _rendererFlags);
+		LogCustomErrorMessage("renderer wrapper doesn't exist, exiting program");
+		exit(1);
 	}
 
-	if (!_renderer)
+	switch(renderer.get()->CreateRenderer(window))
 	{
-		LogSDLError;
+	case Result::Fail:
+		// CreateWindow will log SDL Error
+		LogCustomErrorMessage("exiting program");
+		exit(1);
+	case Result::Warning:
+		LogCustomWarningMessage("Attempt to recreate renderer");
+		return false;
+	case Result::Success:
+		LogCustomInfoMessage("Successfully created renderer");
+		return true;
+	default:
+		LogCustomErrorMessage("Unknown result of creating renderer, exiting program");
+		exit(1);
 	}
 }
 
-const SDL_Renderer* Renderer::GetRenderer()
+Result WrapperRenderer::CreateRenderer(SDL_Window* window)
 {
-	return _renderer;
+	if (!window)
+	{
+		return Result::Fail;
+		LogCustomErrorMessage("Couldn't create renderer, window instance doesn't exist.");
+		exit(1);
+	}
+
+	if (_renderer)
+	{
+		return Result::Warning;
+	}
+
+	_renderer = SDL_CreateRenderer(window, -1, _rendererFlags);
+	if (!_renderer)
+	{
+		return Result::Fail;
+		LogSDLErrorMessage;
+		exit(1);
+	}
+
+	return Result::Success;
 }
 
-void Renderer::DestroyRenderer()
+void WrapperRenderer::DestroyRenderer()
 {
 	SDL_DestroyRenderer(_renderer);
 	if (!_renderer)
 	{
-		LogSDLError;
+		LogSDLErrorMessage;
 	}
 	else
 	{
@@ -48,7 +82,7 @@ void Renderer::DestroyRenderer()
 	}
 }
 
-const Renderer* Renderer::SetRendererFlags(Uint32 flags)
+const WrapperRenderer* WrapperRenderer::SetRendererFlags(Uint32 flags)
 {
 	if (_renderer)
 	{
@@ -58,7 +92,7 @@ const Renderer* Renderer::SetRendererFlags(Uint32 flags)
 	return this;
 }
 
-void Renderer::SetRenderDrawColor(Uint8 r, Uint8 g, Uint8 b, Uint8 a)
+void WrapperRenderer::SetRenderDrawColor(Uint8 r, Uint8 g, Uint8 b, Uint8 a)
 {
 	_renderDrawColor.r = r;
 	_renderDrawColor.g = g;
@@ -73,7 +107,7 @@ void Renderer::SetRenderDrawColor(Uint8 r, Uint8 g, Uint8 b, Uint8 a)
 	SDL_SetRenderDrawColor(_renderer, _renderDrawColor.r, _renderDrawColor.g, _renderDrawColor.b, _renderDrawColor.a);
 }
 
-void Renderer::SetRenderDrawColor(SDL_Color color)
+void WrapperRenderer::SetRenderDrawColor(SDL_Color color)
 {
 	_renderDrawColor = color;
 
@@ -85,34 +119,34 @@ void Renderer::SetRenderDrawColor(SDL_Color color)
 	SDL_SetRenderDrawColor(_renderer, _renderDrawColor.r, _renderDrawColor.g, _renderDrawColor.b, _renderDrawColor.a);
 }
 
-const SDL_Color& Renderer::GetRenderDrawColor() const
+const SDL_Color& WrapperRenderer::GetRenderDrawColor() const
 {
 	return _renderDrawColor;
 }
 
-void Renderer::PrepareScene()
+void WrapperRenderer::PrepareScene()
 {
 	if (!_renderer)
 	{
-		LogCustomError(rendererError);
+		LogCustomErrorMessage(rendererError);
 		return;
 	}
 
 	SDL_RenderClear(_renderer);
 }
 
-void Renderer::PresentScene()
+void WrapperRenderer::PresentScene()
 {
 	if (!_renderer)
 	{
-		LogCustomError(rendererError);
+		LogCustomErrorMessage(rendererError);
 		return;
 	}
 
 	SDL_RenderPresent(_renderer);
 }
 
-void Renderer::Render(Object* object)
+void WrapperRenderer::Render(Object* object)
 {
 	if (!object)
 	{
@@ -134,17 +168,17 @@ void Renderer::Render(Object* object)
 		});
 }
 
-void Renderer::RenderOrientationVectors(Object* object)
+void WrapperRenderer::RenderOrientationVectors(Object* object)
 {
 	if (!_renderer)
 	{
-		LogCustomError("failed to render object");
+		LogCustomErrorMessage("failed to render object, renderer doesn't exist");
 		return;
 	}
 
 	if (!object)
 	{
-		LogCustomError("failed to render object");
+		LogCustomErrorMessage("failed to render object, object doesn't exist");
 		return;
 	}
 	else

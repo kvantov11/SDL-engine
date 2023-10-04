@@ -2,35 +2,49 @@
 
 #include <SDL_video.h>
 
+#include <memory>
 #include <string>
 
-struct SDL_Window;
+// Result of creation
+enum class Result
+{
+	Fail,
+	Success,
+	Warning
+};
 
-class Window
+// Wrapper for SDL_Window
+class WrapperWindow
 {
 public:
-	Window() = default;
-	~Window();
+	~WrapperWindow();
+public:
+	// Initialize instance of SDL_Window
+	static bool InitializeWindow(std::unique_ptr<WrapperWindow>& window);
 private:
 	std::string _windowName = "default window name";
-	int _windowWidth = 620;
-	int _windowHeight = 480;
-	int _windowPositionX = SDL_WINDOWPOS_UNDEFINED;
-	int _windowPositionY = SDL_WINDOWPOS_UNDEFINED;
+	Uint32 _windowWidth = 620;
+	Uint32 _windowHeight = 480;
+	Uint32 _windowPositionX = SDL_WINDOWPOS_UNDEFINED;
+	Uint32 _windowPositionY = SDL_WINDOWPOS_UNDEFINED;
 	Uint32 _windowFlags = 0;
 	SDL_Window* _window = nullptr;
 public:
-	void CreateWindow();
-	SDL_Window* GetWindow();
 	void DestroyWindow();
+													// Getters //
+	SDL_Window* GetWindow();
 	const std::string& GetWindowName() const;
-	const int GetWindowWidth() const;
-	const int GetWindowHeight() const;
+	Uint32 GetWindowHeight() const;
+	Uint32 GetWindowWidth() const;
 	Uint32 GetWindowFlags() const;
-	const Window* SetWindowName(const std::string& name);
-	const Window* SetWindowWidth(int width);
-	const Window* SetWindowHeight(int height);
-	const Window* SetWindowFlags(Uint32 flags);
+													// Getters - end //
+													// Setters with chained call //
+	WrapperWindow* SetWindowName(const std::string& name);
+	WrapperWindow* SetWindowWidth(const Uint32 width);
+	WrapperWindow* SetWindowHeight(const Uint32 height);
+	// Uses integer to set one or combination of flags
+	WrapperWindow* SetWindowFlags(const Uint32 flags);
+													// Setters with chained call - end //
+private:
+	Result CreateWindow();
 };
-
-// How to update existing window if parameters are changed

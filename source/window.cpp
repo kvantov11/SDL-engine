@@ -3,78 +3,102 @@
 #include "logUtils.h"
 
 #include <iostream>
-#include <stdexcept>
 
-Window::~Window()
+WrapperWindow::~WrapperWindow()
 {
 	DestroyWindow();
 }
 
-void Window::CreateWindow()
+bool WrapperWindow::InitializeWindow(std::unique_ptr<WrapperWindow>& window)
 {
-	if (!_window)
+	if (!window)
 	{
-		_window = SDL_CreateWindow(_windowName.c_str(), _windowPositionX, _windowPositionY, _windowWidth, _windowHeight, _windowFlags);
+		LogCustomErrorMessage("window wrapper doesn't exist, exiting program");
+		exit(1);
 	}
 
-	try
+	switch (window->CreateWindow())
 	{
-		if (!_window)
-		{
-			throw std::runtime_error(std::string(__FUNCTION__ " -> ").append(SDL_GetError()));
-		}
-	}
-
-	catch (std::exception &e)
-	{
-		std::cerr << e.what() << '\n';
+	case Result::Fail:
+		// CreateWindow will log SDL Error
+		LogCustomErrorMessage("exiting program");
+		exit(1);
+	case Result::Success:
+		LogCustomInfoMessage("Successfully created window");
+		return true;
+	case Result::Warning:
+		LogCustomWarningMessage("Attempt to recreate window");
+		return false;
+	default:
+		LogCustomErrorMessage("Unknown result of creating window, exiting program");
 		exit(1);
 	}
 }
 
-SDL_Window* Window::GetWindow()
+Result WrapperWindow::CreateWindow()
 {
-	return _window;
+	if (_window)
+	{
+		return Result::Warning;
+	}
+
+	_window = SDL_CreateWindow(_windowName.c_str(), _windowPositionX, _windowPositionY, _windowWidth, _windowHeight, _windowFlags);
+	if (!_window)
+	{
+		LogSDLErrorMessage;
+		return Result::Fail;
+	}
+
+	return Result::Success;
 }
 
-void Window::DestroyWindow()
+void WrapperWindow::DestroyWindow()
 {
 	SDL_DestroyWindow(_window);
 	if (!_window)
 	{
-		LogSDLError;
+		LogSDLErrorMessage;
+		return;
 	}
 	else
 	{
 		_window = nullptr;
 	}
+
+	LogCustomInfoMessage("Window was successfully destroyed");
 }
 
-const Window* Window::SetWindowName(const std::string& name)
+WrapperWindow* WrapperWindow::SetWindowName(const std::string& name)
 {
 	if (this)
 	{
 		_windowName = name;
 	}
+
 	return this;
 }
 
-const std::string& Window::GetWindowName() const
+SDL_Window* WrapperWindow::GetWindow()
+{
+	return _window;
+}
+
+const std::string& WrapperWindow::GetWindowName() const
 {
 	return _windowName;
 }
 
-const int Window::GetWindowWidth() const
+Uint32 WrapperWindow::GetWindowWidth() const
 {
 	return _windowWidth;
 }
 
-const int Window::GetWindowHeight() const
+Uint32 WrapperWindow::GetWindowHeight() const
 {
 	return _windowHeight;
 }
 
-const Window* Window::SetWindowWidth(int width)
+WrapperWindow* WrapperWindow::SetWindowWidth(const Uint32 width)
 {
 	if (this)
 	{
@@ -84,7 +108,7 @@ const Window* Window::SetWindowWidth(int width)
 	return this;
 }
 
-const Window* Window::SetWindowHeight(int height)
+WrapperWindow* WrapperWindow::SetWindowHeight(const Uint32 height)
 {
 	if (this)
 	{
@@ -94,7 +118,7 @@ const Window* Window::SetWindowHeight(int height)
 	return this;
 }
 
-const Window* Window::SetWindowFlags(Uint32 flags)
+WrapperWindow* WrapperWindow::SetWindowFlags(const Uint32 flags)
 {
 	if (this)
 	{
@@ -104,7 +128,7 @@ const Window* Window::SetWindowFlags(Uint32 flags)
 	return this;
 }
 
-Uint32 Window::GetWindowFlags() const
+Uint32 WrapperWindow::GetWindowFlags() const
 {
 	return _windowFlags;
 }

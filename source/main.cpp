@@ -2,30 +2,49 @@
 #include <SDL_main.h>
 #include <SDL_image.h>
 
+#include "logUtils.h"
 #include "randomstuff.h"
 #include "renderer.h"
 #include "window.h"
 
+#include <iostream>
+#include <stdexcept>
+
 int main(int argc, char* argv[])
 {
-    SDL_Init(SDL_INIT_VIDEO);
-    SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "linear");
+    if (SDL_Init(SDL_INIT_VIDEO))
+    {
+        LogSDLErrorMessage;
+        exit(1);
+    }
+
+    if (!SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "linear"))
+    {
+        LogCustomErrorMessage("failed to set hints");
+    }
+
     IMG_Init(IMG_INIT_PNG | IMG_INIT_JPG);
 
-    Window* window = new Window;
-    Renderer* renderer = new Renderer;
+    std::unique_ptr<WrapperWindow> window = std::make_unique<WrapperWindow>();
+    WrapperWindow::InitializeWindow(window);
 
-    window->CreateWindow();
-    renderer->CreateRenderer(window->GetWindow());
+    std::unique_ptr<WrapperRenderer> renderer = std::make_unique<WrapperRenderer>();
+    WrapperRenderer::InitializeRenderer(renderer, window.get()->GetWindow());
 
-    std::shared_ptr<Object> objPtr = std::make_shared<Object>();
-    objPtr->TransformGlobal().SetPosition({ 100, 240, 0 });
-    objPtr->TransformGlobal().RotateUpAxis(0);
+    std::shared_ptr<Object> leftDown = std::make_shared<Object>();
+    leftDown->TransformGlobal().SetPosition({ 200, 300, 0 });
 
-    std::shared_ptr<Object> childPtr = std::make_shared<Object>();
-    childPtr->TransformLocal().SetPosition({ 100, 200, 0 });
-    childPtr->TransformLocal().RotateUpAxis(45);
-    Object::AttachToParent(objPtr, childPtr);
+    std::shared_ptr<Object> rightDown = std::make_shared<Object>();
+    rightDown->TransformLocal().SetPosition({ 100, 0, 0 });
+    Object::AttachToParent(leftDown, rightDown);
+
+    std::shared_ptr<Object> rightUp = std::make_shared<Object>();
+    rightUp->TransformLocal().SetPosition({ 100, 100, 0 });
+    Object::AttachToParent(leftDown, rightUp);
+
+    std::shared_ptr<Object> leftUp = std::make_shared<Object>();
+    leftUp->TransformLocal().SetPosition({ 0, 100, 0 });
+    Object::AttachToParent(leftDown, leftUp);
 
     float i = 0;
     const float howLong = 7; // sec
@@ -37,21 +56,15 @@ int main(int argc, char* argv[])
         ++i;
         renderer->SetRenderDrawColor(0, 0, 0, 255);
         renderer->PrepareScene();
-        renderer->Render(objPtr.get());
+        renderer->Render(leftDown.get());
         renderer->PresentScene();
 
-        objPtr->TransformGlobal().TranslateForward(forwardSpeed * deltaTime / 1000.f);
-        objPtr->TransformGlobal().RotateUpAxis(rotationSpeed * deltaTime / 1000.f);
-        objPtr->TransformGlobal().RotateForwardAxis(2 * rotationSpeed * deltaTime / 1000.f);
+        //leftDown->TransformGlobal().TranslateForward(forwardSpeed * deltaTime / 1000.f);
+        leftDown->TransformGlobal().RotateRightAxis(rotationSpeed * deltaTime / 1000.f);
+        //leftDown->TransformGlobal().RotateForwardAxis(2 * rotationSpeed * deltaTime / 1000.f);
 
         SDL_Delay(deltaTime);
     }
-
-    delete window;
-    window = nullptr;
-
-    delete renderer;
-    renderer = nullptr;
 
     return 0;
 }
