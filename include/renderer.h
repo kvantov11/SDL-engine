@@ -1,7 +1,7 @@
 #pragma once
 
+// Needed for macro
 #include "SDL_render.h"
-#include "SDL_stdinc.h"
 
 #include <memory>
 
@@ -9,11 +9,9 @@
 #define ColorBlue 0, 0, 255, 255
 #define ColorGreen 0, 255, 0, 255
 
-
 class Object;
 class WrapperWindow;
 
-struct SDL_Renderer;
 enum class Result;
 
 class WrapperRenderer
@@ -30,8 +28,8 @@ private:
 public:
 	void DestroyRenderer();
 	const WrapperRenderer* SetRendererFlags(Uint32 flags);
-	void SetRenderDrawColor(Uint8 r, Uint8 g, Uint8 b, Uint8 a);
-	void SetRenderDrawColor(SDL_Color color);
+	void SetRenderDrawColor(const Uint8 r, const Uint8 g, const Uint8 b, const Uint8 a);
+	void SetRenderDrawColor(const SDL_Color color);
 	const SDL_Color& GetRenderDrawColor() const;
 	void PrepareScene();
 	void PresentScene();
@@ -39,4 +37,6 @@ public:
 private:
 	Result CreateRenderer(SDL_Window* window);
 	void RenderOrientationVectors(Object* object);
+	// Applies stored color from wrapper to SDl_Renderer
+	void UpdateRenderDrawColor();
 };

@@ -1,5 +1,6 @@
 #pragma once
 
+// needed for macros
 #include <SDL_video.h>
 
 #include <memory>
@@ -31,20 +32,16 @@ private:
 	SDL_Window* _window = nullptr;
 public:
 	void DestroyWindow();
-													// Getters //
 	SDL_Window* GetWindow();
 	const std::string& GetWindowName() const;
 	Uint32 GetWindowHeight() const;
 	Uint32 GetWindowWidth() const;
 	Uint32 GetWindowFlags() const;
-													// Getters - end //
-													// Setters with chained call //
 	WrapperWindow* SetWindowName(const std::string& name);
 	WrapperWindow* SetWindowWidth(const Uint32 width);
 	WrapperWindow* SetWindowHeight(const Uint32 height);
 	// Uses integer to set one or combination of flags
 	WrapperWindow* SetWindowFlags(const Uint32 flags);
-													// Setters with chained call - end //
 private:
 	Result CreateWindow();
 };

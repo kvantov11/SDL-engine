@@ -80,6 +80,8 @@ void WrapperRenderer::DestroyRenderer()
 	{
 		_renderer = nullptr;
 	}
+
+	LogCustomInfoMessage("Renderer was successfully destroyed");
 }
 
 const WrapperRenderer* WrapperRenderer::SetRendererFlags(Uint32 flags)
@@ -99,24 +101,14 @@ void WrapperRenderer::SetRenderDrawColor(Uint8 r, Uint8 g, Uint8 b, Uint8 a)
 	_renderDrawColor.b = b;
 	_renderDrawColor.a = a;
 
-	if (!_renderer)
-	{
-		return;
-	}
-
-	SDL_SetRenderDrawColor(_renderer, _renderDrawColor.r, _renderDrawColor.g, _renderDrawColor.b, _renderDrawColor.a);
+	UpdateRenderDrawColor();
 }
 
 void WrapperRenderer::SetRenderDrawColor(SDL_Color color)
 {
 	_renderDrawColor = color;
 
-	if (!_renderer)
-	{
-		return;
-	}
-
-	SDL_SetRenderDrawColor(_renderer, _renderDrawColor.r, _renderDrawColor.g, _renderDrawColor.b, _renderDrawColor.a);
+	UpdateRenderDrawColor();
 }
 
 const SDL_Color& WrapperRenderer::GetRenderDrawColor() const
@@ -222,4 +214,15 @@ void WrapperRenderer::RenderOrientationVectors(Object* object)
 		y1 = y0 + object->GetTransformGlobal().GetUpVector().GetElement(1) * lineLength;
 		SDL_RenderDrawLineF(_renderer, x0, y0, x1, y1);
 	}
+}
+
+void WrapperRenderer::UpdateRenderDrawColor()
+{
+	if (!_renderer)
+	{
+		LogCustomWarningMessage("Coudln't set renderer colors. Renderer doesn't exist");
+		return;
+	}
+
+	SDL_SetRenderDrawColor(_renderer, _renderDrawColor.r, _renderDrawColor.g, _renderDrawColor.b, _renderDrawColor.a);
 }
